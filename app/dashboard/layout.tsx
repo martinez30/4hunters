@@ -50,14 +50,14 @@ export const TOOLS = [
   //   description: 'E-mails de abordagem para candidatos passivos',
   //   status: 'active',
   // },
-  // {
-  //   id: 'benchmarking',
-  //   label: 'Benchmarking Salarial',
-  //   icon: '📊',
-  //   href: '/dashboard/benchmarking',
-  //   description: 'Faixas salariais por cargo, nível e setor',
-  //   status: 'active',
-  // },
+  {
+    id: 'benchmarking',
+    label: 'Benchmarking Salarial',
+    icon: '📊',
+    href: '/dashboard/benchmarking',
+    description: 'Faixas salariais por cargo, nível e setor',
+    status: 'active' as const,
+  },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
