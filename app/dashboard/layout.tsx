@@ -17,6 +17,30 @@ export const TOOLS = [
     description: 'Score e análise completa para qualquer vaga',
     status: 'active' as const,
   },
+  // {
+  //   id: 'booleana',
+  //   label: 'Busca Booleana',
+  //   icon: '🔎',
+  //   href: '/dashboard/booleana',
+  //   description: 'Strings booleanas prontas para LinkedIn Recruiter',
+  //   status: 'active' as const,
+  // },
+  {
+    id: 'analisar-perfil',
+    label: 'Analisar Perfil',
+    icon: '👤',
+    href: '/dashboard/analisar-perfil',
+    description: 'Score de aderência candidato × vaga',
+    status: 'active' as const,
+  },
+  // {
+  //   id: 'mensagem',
+  //   label: 'Mensagem WhatsApp',
+  //   icon: '💬',
+  //   href: '/dashboard/mensagem',
+  //   description: 'Mensagens personalizadas para primeiro contato',
+  //   status: 'active' as const,
+  // },
   // ---------- PRÓXIMAS FERRAMENTAS (descomente ao implementar) ----------
   // {
   //   id: 'email',
@@ -32,22 +56,6 @@ export const TOOLS = [
   //   icon: '📊',
   //   href: '/dashboard/benchmarking',
   //   description: 'Faixas salariais por cargo, nível e setor',
-  //   status: 'active',
-  // },
-  // {
-  //   id: 'perfil',
-  //   label: 'Análise de Perfil',
-  //   icon: '🔍',
-  //   href: '/dashboard/perfil',
-  //   description: 'Avalie fit de um candidato para uma vaga',
-  //   status: 'active',
-  // },
-  // {
-  //   id: 'linkedin',
-  //   label: 'Boolean Search',
-  //   icon: '🔎',
-  //   href: '/dashboard/linkedin',
-  //   description: 'Gera queries booleanas para LinkedIn',
   //   status: 'active',
   // },
 ]

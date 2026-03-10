@@ -56,7 +56,8 @@ async function callGemini({ apiKey, prompt, systemPrompt, maxTokens }: Omit<AICa
       contents: [{ parts: [{ text: fullPrompt }] }],
       generationConfig: { 
         temperature: 0.7,
-        maxOutputTokens: maxTokens 
+        maxOutputTokens: maxTokens,
+        thinkingConfig: { thinkingBudget: 0 },
       },
     }),
   })
