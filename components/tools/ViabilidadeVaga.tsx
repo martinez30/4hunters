@@ -9,8 +9,17 @@ interface Props {
 
 interface Tag { id: number; text: string }
 
-function parseAIContent(text: string): string {
+function escapeHtml(text: string): string {
   return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function parseAIContent(text: string): string {
+  const escaped = escapeHtml(text)
+  return escaped
     .replace(/### (.+)/g, '<h3>$1</h3>')
     .replace(/## (.+)/g, '<h3>$1</h3>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')

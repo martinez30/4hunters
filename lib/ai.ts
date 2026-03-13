@@ -45,13 +45,14 @@ async function callAnthropic({ apiKey, prompt, systemPrompt, maxTokens }: Omit<A
 async function callGemini({ apiKey, prompt, systemPrompt, maxTokens }: Omit<AICallParams, 'provider'>) {
   // Gemini Flash — melhor custo-benefício
   const model = 'gemini-2.5-flash'
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
+  // API key enviada via header para não vazar em logs/proxies
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`
 
   const fullPrompt = systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt
 
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
     body: JSON.stringify({
       contents: [{ parts: [{ text: fullPrompt }] }],
       generationConfig: { 

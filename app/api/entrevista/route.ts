@@ -3,14 +3,25 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { decrypt } from '@/lib/crypto'
 import { callAI } from '@/lib/ai'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 export async function POST(req: NextRequest) {
   const { userId } = auth()
   if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
+  if (!checkRateLimit(userId)) {
+    return NextResponse.json({ error: 'Muitas requisições. Aguarde um momento.' }, { status: 429 })
+  }
+
   const { descricaoVaga, transcricao } = await req.json()
   if (!descricaoVaga?.trim() || !transcricao?.trim()) {
     return NextResponse.json({ error: 'Descrição da vaga e transcrição são obrigatórias' }, { status: 400 })
+  }
+  if (descricaoVaga.length > 20_000) {
+    return NextResponse.json({ error: 'Descrição da vaga muito longa (máximo 20.000 caracteres)' }, { status: 400 })
+  }
+  if (transcricao.length > 100_000) {
+    return NextResponse.json({ error: 'Transcrição muito longa (máximo 100.000 caracteres)' }, { status: 400 })
   }
 
   const { data: settings } = await supabaseAdmin
@@ -75,11 +86,12 @@ NOTA: recomendacao deve ser exatamente um de: "Avançar para próxima etapa", "A
     const raw = await callAI({ provider: settings.provider, apiKey, prompt, systemPrompt, maxTokens: 4096 })
     const clean = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
     const match = clean.match(/\{[\s\S]*\}/)
-    if (!match) throw new Error(`Resposta inválida da IA. Retorno: ${clean.substring(0, 200)}`)
+    if (!match) throw new Error('A IA retornou um formato inesperado. Tente novamente.')
     const data = JSON.parse(match[0])
     return NextResponse.json({ data })
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Erro desconhecido'
+    console.error('[api/entrevista]', err)
+    const message = err instanceof Error ? err.message : 'Erro ao processar a solicitação'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

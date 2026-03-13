@@ -3,14 +3,28 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { decrypt } from '@/lib/crypto'
 import { callAI } from '@/lib/ai'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 export async function POST(req: NextRequest) {
   const { userId } = auth()
   if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
+  if (!checkRateLimit(userId)) {
+    return NextResponse.json({ error: 'Muitas requisições. Aguarde um momento.' }, { status: 429 })
+  }
+
   const { cargo, nivel, setor, localizacao, porte } = await req.json()
   if (!cargo?.trim() || !nivel?.trim()) {
     return NextResponse.json({ error: 'Cargo e nível são obrigatórios' }, { status: 400 })
+  }
+  if (
+    (cargo && cargo.length > 200) ||
+    (nivel && nivel.length > 200) ||
+    (setor && setor.length > 200) ||
+    (localizacao && localizacao.length > 200) ||
+    (porte && porte.length > 200)
+  ) {
+    return NextResponse.json({ error: 'Campo muito longo (máximo 200 caracteres)' }, { status: 400 })
   }
 
   const { data: settings } = await supabaseAdmin
@@ -56,11 +70,12 @@ Retorne APENAS JSON puro, sem markdown, no seguinte formato EXATO:
     const raw = await callAI({ provider: settings.provider, apiKey, prompt, systemPrompt })
     const clean = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
     const match = clean.match(/\{[\s\S]*\}/)
-    if (!match) throw new Error(`Resposta inválida da IA. Retorno: ${clean.substring(0, 200)}`)
+    if (!match) throw new Error('A IA retornou um formato inesperado. Tente novamente.')
     const data = JSON.parse(match[0])
     return NextResponse.json({ data })
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Erro desconhecido'
+    console.error('[api/benchmarking]', err)
+    const message = err instanceof Error ? err.message : 'Erro ao processar a solicitação'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

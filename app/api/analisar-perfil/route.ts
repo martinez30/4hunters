@@ -3,14 +3,22 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { decrypt } from '@/lib/crypto'
 import { callAI } from '@/lib/ai'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 export async function POST(req: NextRequest) {
   const { userId } = auth()
   if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
+  if (!checkRateLimit(userId)) {
+    return NextResponse.json({ error: 'Muitas requisições. Aguarde um momento.' }, { status: 429 })
+  }
+
   const { perfilCandidato, descricaoVaga } = await req.json()
   if (!perfilCandidato?.trim() || !descricaoVaga?.trim()) {
     return NextResponse.json({ error: 'Perfil do candidato e descrição da vaga são obrigatórios' }, { status: 400 })
+  }
+  if (perfilCandidato.length > 20_000 || descricaoVaga.length > 20_000) {
+    return NextResponse.json({ error: 'Texto muito longo (máximo 20.000 caracteres por campo)' }, { status: 400 })
   }
 
   const { data: settings } = await supabaseAdmin
@@ -46,11 +54,12 @@ NOTA: recomendacao deve ser exatamente um de: "Abordar agora", "Salvar para segu
     const raw = await callAI({ provider: settings.provider, apiKey, prompt, systemPrompt })
     const clean = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
     const match = clean.match(/\{[\s\S]*\}/)
-    if (!match) throw new Error(`Resposta inválida da IA. Retorno: ${clean.substring(0, 200)}`)
+    if (!match) throw new Error('A IA retornou um formato inesperado. Tente novamente.')
     const data = JSON.parse(match[0])
     return NextResponse.json({ data })
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Erro desconhecido'
+    console.error('[api/analisar-perfil]', err)
+    const message = err instanceof Error ? err.message : 'Erro ao processar a solicitação'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

@@ -105,7 +105,9 @@ export default function MinhaFerramenta({ hasApiKey, provider }: Props) {
       {result && (
         <div className="mt-8 tool-card">
           <div className="ai-content"
-            dangerouslySetInnerHTML={{ __html: `<p>${result.replace(/\n\n/g, '</p><p>').replace(/### (.+)/g, '<h3>$1</h3>').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</p>` }}
+            dangerouslySetInnerHTML={{ __html: `<p>${result
+              .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+              .replace(/\n\n/g, '</p><p>').replace(/### (.+)/g, '<h3>$1</h3>').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</p>` }}
           />
         </div>
       )}

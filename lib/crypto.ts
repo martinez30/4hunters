@@ -4,7 +4,10 @@
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY!
 
 async function getKey(): Promise<CryptoKey> {
-  const raw = Buffer.from(ENCRYPTION_KEY.padEnd(32).slice(0, 32), 'utf-8')
+  if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length < 32) {
+    throw new Error('ENCRYPTION_KEY deve ter no mínimo 32 caracteres. Verifique as variáveis de ambiente.')
+  }
+  const raw = Buffer.from(ENCRYPTION_KEY.slice(0, 32), 'utf-8')
   return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt'])
 }
 
