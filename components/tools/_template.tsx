@@ -15,8 +15,9 @@
  * ================================================================
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useProvider } from '@/components/providers/ProviderContext'
 
 interface Props {
   hasApiKey: boolean
@@ -27,6 +28,8 @@ export default function MinhaFerramenta({ hasApiKey, provider }: Props) {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<string | null>(null)
+  const { setProvider } = useProvider()
+  useEffect(() => { setProvider(provider as 'anthropic' | 'gemini' | 'openai') }, [provider, setProvider])
 
   async function handleSubmit() {
     if (!input.trim()) return
@@ -82,7 +85,7 @@ export default function MinhaFerramenta({ hasApiKey, provider }: Props) {
           Nome da Ferramenta
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
-          Descrição do que esta ferramenta faz. Usando: <strong>{provider}</strong>
+          Descrição do que esta ferramenta faz.
         </p>
       </div>
 

@@ -1,6 +1,7 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useProvider } from '@/components/providers/ProviderContext'
 
 interface Props {
   hasApiKey: boolean
@@ -78,6 +79,8 @@ export default function BenchmarkingSalarial({ hasApiKey, provider }: Props) {
   const [porte, setPorte] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<Result | null>(null)
+  const { setProvider } = useProvider()
+  useEffect(() => { setProvider(provider as 'anthropic' | 'gemini' | 'openai') }, [provider, setProvider])
 
   async function buscar() {
     if (!cargo.trim() || !nivel) return alert('Preencha o cargo e o nível.')
@@ -119,7 +122,6 @@ export default function BenchmarkingSalarial({ hasApiKey, provider }: Props) {
         <h1 className="font-serif text-3xl" style={{ color: 'var(--ink)' }}>Benchmarking Salarial</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
           Faixas salariais por cargo, nível e setor — dados do mercado brasileiro 2024-2025.
-          Usando: <strong>{provider === 'anthropic' ? 'Anthropic Claude' : 'Google Gemini'}</strong>
         </p>
       </div>
 

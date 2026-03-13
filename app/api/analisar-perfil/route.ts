@@ -56,6 +56,8 @@ NOTA: recomendacao deve ser exatamente um de: "Abordar agora", "Salvar para segu
     const match = clean.match(/\{[\s\S]*\}/)
     if (!match) throw new Error('A IA retornou um formato inesperado. Tente novamente.')
     const data = JSON.parse(match[0])
+    // log de uso — fire-and-forget, não bloqueia a resposta
+    supabaseAdmin.from('usage_logs').insert({ clerk_user_id: userId, tool: 'analisar-perfil', provider: settings.provider }).then()
     return NextResponse.json({ data })
   } catch (err) {
     console.error('[api/analisar-perfil]', err)

@@ -61,6 +61,8 @@ FORMATO:
     const match = clean.match(/\{[\s\S]*\}/)
     if (!match) throw new Error('A IA retornou um formato inesperado. Tente novamente.')
     const data = JSON.parse(match[0])
+    // log de uso — fire-and-forget
+    supabaseAdmin.from('usage_logs').insert({ clerk_user_id: userId, tool: 'mensagem', provider: settings.provider }).then()
     return NextResponse.json({ data })
   } catch (err) {
     console.error('[api/mensagem]', err)

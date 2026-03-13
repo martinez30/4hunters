@@ -72,6 +72,8 @@ Formato:
       })
     }
 
+    // log de uso — fire-and-forget
+    supabaseAdmin.from('usage_logs').insert({ clerk_user_id: userId, tool: 'booleana', provider: settings.provider }).then()
     return NextResponse.json({ data })
   } catch (err) {
     console.error('[api/booleana]', err)

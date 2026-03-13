@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 
-type Provider = 'anthropic' | 'gemini'
+type Provider = 'anthropic' | 'gemini' | 'openai'
 
 interface Props {
   currentProvider: Provider
@@ -58,6 +58,13 @@ export default function SettingsForm({ currentProvider, hasApiKey }: Props) {
       linkLabel: 'Obter chave no Google AI Studio',
       note: 'Gemini Flash — ótimo custo-benefício, recomendado para alto volume.',
     },
+    openai: {
+      name: 'OpenAI ChatGPT',
+      hint: 'Começa com sk- (Platform API Key)',
+      link: 'https://platform.openai.com/api-keys',
+      linkLabel: 'Obter chave no OpenAI Platform',
+      note: 'GPT-4o — amplamente conhecido, ótima performance geral.',
+    },
   }
 
   const info = providerInfo[provider]
@@ -71,8 +78,8 @@ export default function SettingsForm({ currentProvider, hasApiKey }: Props) {
           Escolha qual IA será usada nas ferramentas. Você pode trocar a qualquer momento.
         </p>
 
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          {(['anthropic', 'gemini'] as Provider[]).map(p => (
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          {(['anthropic', 'gemini', 'openai'] as Provider[]).map(p => (
             <button
               key={p}
               onClick={() => setProvider(p)}
@@ -82,7 +89,7 @@ export default function SettingsForm({ currentProvider, hasApiKey }: Props) {
                 background: provider === p ? 'var(--cream)' : 'white',
               }}>
               <div className="font-semibold text-sm mb-0.5" style={{ color: 'var(--ink)' }}>
-                {p === 'anthropic' ? '🤖 Anthropic Claude' : '✨ Google Gemini'}
+                {p === 'anthropic' ? '🤖 Anthropic' : p === 'gemini' ? '✨ Gemini' : '💬 OpenAI'}
               </div>
               <div className="text-xs" style={{ color: 'var(--muted)' }}>
                 {providerInfo[p].note}
@@ -106,7 +113,7 @@ export default function SettingsForm({ currentProvider, hasApiKey }: Props) {
             style={{ background: '#f0faf5', border: '1px solid #b8e0ca' }}>
             <span style={{ color: '#2d7a4f' }}>✓</span>
             <span className="text-sm" style={{ color: '#2d7a4f' }}>
-              Você tem uma chave configurada para <strong>{currentProvider === 'anthropic' ? 'Anthropic' : 'Gemini'}</strong>.
+              Você tem uma chave configurada para <strong>{currentProvider === 'anthropic' ? 'Anthropic Claude' : currentProvider === 'gemini' ? 'Google Gemini' : 'OpenAI'}</strong>.
               Cole uma nova abaixo para substituir.
             </span>
             <button

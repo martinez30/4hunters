@@ -2,12 +2,44 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { UserButton } from '@clerk/nextjs'
+import { UserButton, useUser } from '@clerk/nextjs'
 import { TOOLS } from '@/lib/tools'
+import { ProviderContextProvider, useProvider } from '@/components/providers/ProviderContext'
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+const ADMIN_IDS = process.env.NEXT_PUBLIC_ADMIN_USER_IDS?.split(',').map(s => s.trim()).filter(Boolean) ?? []
+
+const PROVIDER_INFO: Record<string, { label: string; icon: string; color: string }> = {
+  anthropic: { label: 'Claude',  icon: '🤖', color: '#c084fc' },
+  gemini:    { label: 'Gemini',  icon: '✨', color: '#67e8f9' },
+  openai:    { label: 'GPT-4o',  icon: '💬', color: '#86efac' },
+}
+
+function ActiveProviderBadge() {
+  const { provider } = useProvider()
+  if (!provider) return null
+  const info = PROVIDER_INFO[provider]
+  if (!info) return null
+  return (
+    <div
+      className="flex items-center gap-1.5 text-xs px-3 py-1 rounded-full select-none"
+      style={{
+        background: 'rgba(255,255,255,.06)',
+        border: '1px solid rgba(255,255,255,.12)',
+      }}
+      title={`IA ativa: ${info.label}`}
+    >
+      <span className="text-sm leading-none">{info.icon}</span>
+      <span style={{ color: 'rgba(255,255,255,.4)', fontWeight: 400 }}>IA:</span>
+      <span className="font-semibold tracking-wide" style={{ color: info.color }}>{info.label}</span>
+    </div>
+  )
+}
+
+function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const { user } = useUser()
+  const isAdmin = !!user?.id && ADMIN_IDS.includes(user.id)
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -28,6 +60,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
         </div>
         <div className="flex items-center gap-4">
+          <ActiveProviderBadge />
           <Link href="/dashboard/settings"
             className="text-xs flex items-center gap-1.5 transition-colors"
             style={{ color: pathname === '/dashboard/settings' ? 'var(--gold)' : 'rgba(255,255,255,.4)' }}>
@@ -88,6 +121,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 Abrir uma issue no GitHub →
               </a>
             </div>
+
+            {isAdmin && (
+              <div className="px-2 pb-3">
+                <Link href="/dashboard/admin"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-md mb-0.5 transition-all"
+                  style={{
+                    background: pathname === '/dashboard/admin' ? 'var(--cream)' : 'transparent',
+                    color: pathname === '/dashboard/admin' ? 'var(--ink)' : 'var(--muted)',
+                    fontWeight: pathname === '/dashboard/admin' ? '500' : '400',
+                  }}>
+                  <span className="text-base">📊</span>
+                  <span className="text-sm">Painel Admin</span>
+                </Link>
+              </div>
+            )}
           </div>
         </aside>
 
@@ -97,5 +145,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </main>
       </div>
     </div>
+  )
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <ProviderContextProvider>
+      <DashboardShell>{children}</DashboardShell>
+    </ProviderContextProvider>
   )
 }

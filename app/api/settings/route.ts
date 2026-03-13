@@ -5,7 +5,7 @@ import { encrypt } from '@/lib/crypto'
 import type { AIProvider } from '@/lib/ai'
 import { checkRateLimit } from '@/lib/rateLimit'
 
-const VALID_PROVIDERS: AIProvider[] = ['anthropic', 'gemini']
+const VALID_PROVIDERS: AIProvider[] = ['anthropic', 'gemini', 'openai']
 
 // POST /api/settings — salva ou atualiza a API key do usuário
 export async function POST(req: NextRequest) {
@@ -35,6 +35,9 @@ export async function POST(req: NextRequest) {
   if (provider === 'gemini' && apiKey.length < 20) {
     return NextResponse.json({ error: 'Chave Gemini inválida.' }, { status: 400 })
   }
+  if (provider === 'openai' && !apiKey.startsWith('sk-')) {
+    return NextResponse.json({ error: 'Chave OpenAI inválida. Deve começar com sk-' }, { status: 400 })
+  }
 
   const encrypted = await encrypt(apiKey)
 
@@ -48,7 +51,10 @@ export async function POST(req: NextRequest) {
       updated_at: new Date().toISOString(),
     }, { onConflict: 'clerk_user_id' })
 
-  if (error) return NextResponse.json({ error: 'Erro ao salvar' }, { status: 500 })
+  if (error) {
+    console.error('[api/settings] Supabase upsert error:', error)
+    return NextResponse.json({ error: 'Erro ao salvar: ' + error.message }, { status: 500 })
+  }
 
   return NextResponse.json({ ok: true })
 }

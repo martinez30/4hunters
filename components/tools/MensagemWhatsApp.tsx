@@ -1,6 +1,7 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useProvider } from '@/components/providers/ProviderContext'
 
 interface Props {
   hasApiKey: boolean
@@ -20,6 +21,8 @@ export default function MensagemWhatsApp({ hasApiKey, provider }: Props) {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<Result | null>(null)
   const [copied, setCopied] = useState<string | null>(null)
+  const { setProvider } = useProvider()
+  useEffect(() => { setProvider(provider as 'anthropic' | 'gemini' | 'openai') }, [provider, setProvider])
 
   async function gerar() {
     if (!vaga.trim() || !perfil.trim()) {
@@ -70,7 +73,6 @@ export default function MensagemWhatsApp({ hasApiKey, provider }: Props) {
         <h1 className="font-serif text-3xl" style={{ color: 'var(--ink)' }}>Mensagem WhatsApp</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
           Gere mensagens personalizadas para o primeiro contato — curtas, humanas e que despertam curiosidade.
-          Usando: <strong>{provider === 'anthropic' ? 'Anthropic Claude' : 'Google Gemini'}</strong>
         </p>
       </div>
 

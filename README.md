@@ -1,6 +1,191 @@
 # 4hunters 🎯
 
-**Kit de ferramentas com IA para consultores de RH**
+**Ferramentas de IA para consultores e empresas de RH — Open Source, sem fins lucrativos.**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/martinez30/4hunters/pulls)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
+
+---
+
+## O que é o 4hunters?
+
+O 4hunters é um projeto **open source e sem fins lucrativos** que reúne, de forma organizada e prática, ferramentas com inteligência artificial para apoiar **consultores de RH, recrutadores e empresas** no processo de seleção de talentos.
+
+O objetivo é simples: ajudar profissionais de RH a tomar decisões mais embasadas — na análise de uma vaga, na avaliação de um candidato, no benchmarking salarial — usando IA sem depender de plataformas caras ou fechadas.
+
+Cada usuário usa sua **própria API key** (Anthropic Claude, Google Gemini ou OpenAI). Nenhum token é pago pelo projeto. Nenhum dado de candidato ou vaga é armazenado. Você tem controle total.
+
+> Este projeto nasce da comunidade, para a comunidade. Contribuições são muito bem-vindas.
+
+---
+
+## Ferramentas disponíveis
+
+| Ferramenta | Status | O que faz |
+|---|---|---|
+| 🎯 Análise de Viabilidade de Vaga | ✅ Disponível | Score 0–100 + relatório completo para apresentar ao cliente |
+| � Benchmarking Salarial | ✅ Disponível | Faixas salariais por cargo, nível e setor no mercado brasileiro |
+| 🎙️ Análise de Entrevista | ✅ Disponível | Avaliação de hard e soft skills com base na transcrição |
+| 👤 Análise de Perfil | ✅ Disponível | Score de aderência candidato × descrição da vaga |
+
+---
+
+## Stack
+
+- **Framework:** Next.js 14 (App Router, TypeScript)
+- **Autenticação:** Clerk
+- **Banco de dados:** Supabase (PostgreSQL)
+- **IA:** Anthropic Claude · Google Gemini · OpenAI GPT-4o
+- **Estilo:** Tailwind CSS
+- **Deploy:** Vercel (recomendado)
+
+---
+
+## Setup para rodar localmente
+
+### Pré-requisitos
+
+- Node.js 18+
+- Conta no [Clerk](https://clerk.com) (grátis)
+- Conta no [Supabase](https://supabase.com) (grátis)
+
+```bash
+# 1. Clone o repositório
+git clone https://github.com/martinez30/4hunters.git
+cd 4hunters
+
+# 2. Instale as dependências
+npm install
+
+# 3. Configure as variáveis de ambiente
+cp .env.example .env.local
+# Edite .env.local com suas chaves (veja a seção abaixo)
+
+# 4. Crie as tabelas no Supabase
+# Acesse seu projeto no Supabase → SQL Editor → cole o conteúdo de supabase/schema.sql → Run
+
+# 5. Inicie o servidor de desenvolvimento
+npm run dev
+# Acesse http://localhost:3000
+```
+
+### Variáveis de ambiente necessárias
+
+```env
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY    # pk_test_... (Clerk → API Keys)
+CLERK_SECRET_KEY                     # sk_test_... (Clerk → API Keys)
+NEXT_PUBLIC_CLERK_SIGN_IN_URL        = /login
+NEXT_PUBLIC_CLERK_SIGN_UP_URL        = /signup
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL  = /dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL  = /dashboard
+NEXT_PUBLIC_SUPABASE_URL             # https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY        # eyJ... (Supabase → Settings → API → anon)
+SUPABASE_SERVICE_ROLE_KEY            # eyJ... (Supabase → Settings → API → service_role)
+ENCRYPTION_KEY                       # string aleatória de exatamente 32 caracteres
+```
+
+> **ENCRYPTION_KEY:** Use `openssl rand -base64 32 | head -c 32` ou qualquer gerador de senhas para criar uma string de 32 caracteres.
+
+---
+
+## Deploy com um clique (Vercel)
+
+1. Faça fork deste repositório
+2. Acesse [vercel.com](https://vercel.com) → **Add New Project** → selecione seu fork
+3. Adicione as variáveis de ambiente listadas acima
+4. Clique em **Deploy**
+
+Após o deploy, autorize o domínio gerado no **Clerk Dashboard → Domains**.
+
+---
+
+## Como contribuir
+
+O 4hunters é um projeto vivo e toda contribuição conta — seja uma nova ferramenta, uma correção de bug, melhoria de UX ou tradução.
+
+### Adicionando uma nova ferramenta de RH
+
+A arquitetura foi pensada para facilitar ao máximo a adição de novas ferramentas:
+
+**1. Crie o componente**
+
+Copie `components/tools/_template.tsx` para `components/tools/NomeDaFerramenta.tsx`.
+O template já tem toda a estrutura: formulário, chamada à API de IA, exibição do resultado.
+Você só precisa customizar o formulário e o prompt.
+
+**2. Crie a rota do dashboard**
+
+Crie `app/dashboard/nome-da-ferramenta/page.tsx`. O padrão é:
+
+```tsx
+import { auth } from '@clerk/nextjs/server'
+import { redirect } from 'next/navigation'
+import { supabaseAdmin } from '@/lib/supabase'
+import NomeDaFerramenta from '@/components/tools/NomeDaFerramenta'
+
+export default async function Page() {
+  const { userId } = auth()
+  if (!userId) redirect('/login')
+  const { data: settings } = await supabaseAdmin
+    .from('user_settings')
+    .select('provider, has_api_key')
+    .eq('clerk_user_id', userId)
+    .single()
+  return <NomeDaFerramenta hasApiKey={settings?.has_api_key ?? false} provider={settings?.provider ?? 'anthropic'} />
+}
+```
+
+**3. Crie a API route (se necessária)**
+
+Se sua ferramenta retorna JSON estruturado (não texto livre), crie `app/api/nome/route.ts`.
+Veja os arquivos existentes em `app/api/` como referência — o padrão é consistente.
+
+**4. Registre na sidebar**
+
+Adicione um item ao array `TOOLS` em `lib/tools.ts`.
+
+**5. Abra um Pull Request**
+
+Descreva o que a ferramenta faz e qual problema de RH ela resolve. Menos de 100 linhas de código já são suficientes para uma nova ferramenta funcional.
+
+### Outras formas de contribuir
+
+- 🐛 **Bug:** Abra uma [issue](https://github.com/martinez30/4hunters/issues) descrevendo o problema
+- 💡 **Ideia de ferramenta:** Abra uma issue com a tag `enhancement`
+- 📖 **Documentação:** Melhorias no README ou comentários no código são sempre bem-vindas
+- 🌐 **Internacionalização:** O projeto é em português, mas pull requests para inglês/espanhol são aceitos
+
+### Padrões do projeto
+
+- TypeScript estrito — sem `any` desnecessário
+- Nenhum dado sensível (prompt, resultado da IA, dados do candidato) é salvo no banco
+- Toda chamada de IA passa pela API route `/api/ai` ou por uma route específica — nunca direto do cliente
+- A API key do usuário é sempre descriptografada server-side e nunca exposta ao browser
+- Componentes de ferramenta são independentes — cada um em seu próprio arquivo
+
+---
+
+## Segurança
+
+- API keys dos usuários são criptografadas com AES-256-GCM antes de serem salvas
+- O banco (Supabase) tem RLS habilitado; todo acesso é via `service_role` no servidor
+- Nenhuma API key vai para o frontend em nenhum momento
+- Rate limiting em todas as rotas de IA (20 req/min por usuário)
+- Security headers configurados no `next.config.js`
+
+---
+
+## Licença
+
+MIT — use, modifique e distribua livremente. Atribuição é apreciada, mas não obrigatória.
+
+---
+
+<div align="center">
+  <sub>Feito com ❤️ para a comunidade de RH brasileira.</sub>
+</div>
+
 
 Analise viabilidade de vagas, faça benchmarking salarial e apresente dados concretos para clientes — tudo com sua própria API key, sem mensalidade.
 

@@ -1,6 +1,7 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useProvider } from '@/components/providers/ProviderContext'
 
 interface Props {
   hasApiKey: boolean
@@ -34,6 +35,8 @@ export default function AnalisarPerfil({ hasApiKey, provider }: Props) {
   const [perfil, setPerfil] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<Result | null>(null)
+  const { setProvider } = useProvider()
+  useEffect(() => { setProvider(provider as 'anthropic' | 'gemini' | 'openai') }, [provider, setProvider])
 
   async function analisar() {
     if (!vaga.trim() || !perfil.trim()) {
@@ -77,7 +80,6 @@ export default function AnalisarPerfil({ hasApiKey, provider }: Props) {
         <h1 className="font-serif text-3xl" style={{ color: 'var(--ink)' }}>Analisar Perfil</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
           Cole o perfil do candidato e a descrição da vaga para receber score de aderência, pontos fortes, gaps e dica de abordagem.
-          Usando: <strong>{provider === 'anthropic' ? 'Anthropic Claude' : 'Google Gemini'}</strong>
         </p>
       </div>
 

@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Muitas requisições. Aguarde um momento.' }, { status: 429 })
   }
 
-  const { prompt, systemPrompt, maxTokens } = await req.json()
+  const { prompt, systemPrompt, maxTokens, tool } = await req.json()
 
   if (!prompt || typeof prompt !== 'string') {
     return NextResponse.json({ error: 'Prompt inválido' }, { status: 400 })
@@ -54,6 +54,10 @@ export async function POST(req: NextRequest) {
       systemPrompt,
       maxTokens: maxTokens ?? 8192,
     })
+    // log de uso — fire-and-forget
+    if (tool && typeof tool === 'string') {
+      supabaseAdmin.from('usage_logs').insert({ clerk_user_id: userId, tool, provider: settings.provider }).then()
+    }
     return NextResponse.json({ result })
   } catch (err: unknown) {
     console.error('[api/ai]', err)

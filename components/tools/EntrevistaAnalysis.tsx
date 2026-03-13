@@ -1,6 +1,7 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useProvider } from '@/components/providers/ProviderContext'
 
 interface Props {
   hasApiKey: boolean
@@ -123,6 +124,8 @@ export default function EntrevistaAnalysis({ hasApiKey, provider }: Props) {
   const [transcricao, setTranscricao] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<Result | null>(null)
+  const { setProvider } = useProvider()
+  useEffect(() => { setProvider(provider as 'anthropic' | 'gemini' | 'openai') }, [provider, setProvider])
 
   async function analisar() {
     if (!vaga.trim() || !transcricao.trim()) {
@@ -167,7 +170,6 @@ export default function EntrevistaAnalysis({ hasApiKey, provider }: Props) {
         <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
           Cole a transcrição da entrevista e a descrição da vaga para receber um score detalhado de aderência,
           com avaliação separada de Hard Skills e Soft Skills, baseada em evidências reais da conversa.
-          Usando: <strong>{provider === 'anthropic' ? 'Anthropic Claude' : 'Google Gemini'}</strong>
         </p>
       </div>
 

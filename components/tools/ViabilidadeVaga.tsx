@@ -1,6 +1,7 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useProvider } from '@/components/providers/ProviderContext'
 
 interface Props {
   hasApiKey: boolean
@@ -34,6 +35,8 @@ function parseAIContent(text: string): string {
 }
 
 export default function ViabilidadeVaga({ hasApiKey, provider }: Props) {
+  const { setProvider } = useProvider()
+  useEffect(() => { setProvider(provider as 'anthropic' | 'gemini' | 'openai') }, [provider, setProvider])
   const [aba, setAba] = useState<'formulario' | 'texto'>('formulario')
 
   // Estado aba formulário
@@ -138,7 +141,7 @@ Parágrafo curto adequado para apresentar diretamente ao cliente.`
       const res = await fetch('/api/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: promptFinal, maxTokens: 8192 }),
+        body: JSON.stringify({ prompt: promptFinal, maxTokens: 8192, tool: 'viabilidade' }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -200,7 +203,6 @@ Parágrafo curto adequado para apresentar diretamente ao cliente.`
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
           Preencha os dados da vaga e receba um score + relatório pronto para apresentar ao cliente.
-          Usando: <strong>{provider === 'anthropic' ? 'Anthropic Claude' : 'Google Gemini'}</strong>
         </p>
       </div>
 

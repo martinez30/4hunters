@@ -1,6 +1,6 @@
-import { SignUp } from '@clerk/nextjs'
+import { SignIn } from '@clerk/nextjs'
 
-export default function SignUpPage() {
+export default function LoginCatchAllPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--paper)' }}>
       <div className="w-full max-w-md">
@@ -8,9 +8,8 @@ export default function SignUpPage() {
           <div className="font-serif text-3xl" style={{ color: 'var(--ink)' }}>
             4<em style={{ color: 'var(--gold)' }}>hunters</em>
           </div>
-          <p className="text-sm mt-2" style={{ color: 'var(--muted)' }}>Crie sua conta grátis</p>
         </div>
-        <SignUp />
+        <SignIn />
       </div>
     </div>
   )
