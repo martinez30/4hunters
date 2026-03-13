@@ -52,4 +52,12 @@ export const TOOLS = [
     description: 'Faixas salariais por cargo, nível e setor',
     status: 'active' as const,
   },
+  {
+    id: 'entrevista',
+    label: 'Análise de Entrevista',
+    icon: '🎙️',
+    href: '/dashboard/entrevista',
+    description: 'Score de aderência baseado na transcrição da entrevista',
+    status: 'active' as const,
+  },
 ]
